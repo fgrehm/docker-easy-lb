@@ -2,7 +2,7 @@
 
 Experimental _automagic_ load balancing for Docker web apps in less than 100 lines of bash.
 
-[demo](http://i.imgur.com/yRrsaAM.gif)
+![demo](http://i.imgur.com/yRrsaAM.gif)
 
 ## Initial setup
 
