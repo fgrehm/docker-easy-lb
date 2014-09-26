@@ -77,8 +77,8 @@ $ docker rm -f hello
 
 When the [launch-host](launch-host) script gets run, it will start a `fgrehm/easy-lb`
 container with the Docker socket `/var/run/docker.sock` bind mounted inside it. From
-there it will use [supervisord](supervisord.conf) to kick off [Redis](http://redis.io/)
-+ [Hipache](https://github.com/hipache/hipache) + [a "service"](service.sh) that will
+there it will use [supervisord](supervisord.conf) to kick off [Redis](http://redis.io/) +
+[Hipache](https://github.com/hipache/hipache) + [a "service"](service.sh) that will
 register a Docker [events listener](https://docs.docker.com/reference/commandline/cli/#events)
 that [responsible](handler.sh) for registering / deregistering containers that
 expose a port normally used by web apps.
