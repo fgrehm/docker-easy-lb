@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd /no-app-app && nodejs /usr/local/bin/static -a '0.0.0.0'

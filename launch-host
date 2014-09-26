@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+if [ "${DEBUG}" = '1' ]; then
+  set -x
+fi
+
+DOMAIN='docker.dev'
+CONTAINER_NAME='easy-lb'
+
+# Container exists
+if $(docker ps -a | grep -q $CONTAINER_NAME); then
+  # Container is not running
+  if ! $(docker ps | grep -q $CONTAINER_NAME); then
+    echo 'Starting load balancer container'
+    docker start $CONTAINER_NAME
+  else
+    echo 'Load balancer is already running'
+  fi
+else # Create
+  echo 'No load balancer found, starting'
+  docker run -d -e DOMAIN=$DOMAIN --name $CONTAINER_NAME -v /var/run/docker.sock:/var/run/docker.sock fgrehm/easy-lb
+fi
+
+stop_container() {
+  echo 'Stopping load balancer'
+  docker stop $CONTAINER_NAME
+}
+
+trap stop_container SIGINT SIGTERM
+
+LB_IP=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $CONTAINER_NAME)
+dnsmasq --bind-interfaces -p 5353 -q -n -R -h --no-daemon --address=/${DOMAIN}/${LB_IP}
