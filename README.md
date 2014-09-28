@@ -75,16 +75,17 @@ $ docker rm -f hello
 
 ## How does it work?
 
-When the [launch-host](launch-host) script gets run, it will start a `fgrehm/easy-lb`
-container with the Docker socket `/var/run/docker.sock` bind mounted inside it. From
+When the [launch-host](launch-host) script gets run, it will start a `dnsmasq` server
+on your machine pointing any address under `*.docker.dev` to a `fgrehm/easy-lb`
+container that has the Docker socket `/var/run/docker.sock` bind mounted inside it. From
 there it will use [supervisord](supervisord.conf) to kick off [Redis](http://redis.io/) +
 [Hipache](https://github.com/hipache/hipache) + [a "service"](service.sh) that will
 register a Docker [events listener](https://docs.docker.com/reference/commandline/cli/#events)
 that [responsible](handler.sh) for registering / deregistering containers that
 expose a port normally used by web apps.
 
-It does not depend on any other tool apart from Docker itself but it plays really
-well with [devstep](http://fgrehm.viewdocs.io/devstep), [fig](http://www.fig.sh/)
+It does not depend on any other tool apart from Docker and `dnsmasq` itself but it
+plays really well with [devstep](http://fgrehm.viewdocs.io/devstep), [fig](http://www.fig.sh/)
 and basically anything that creates Docker containers that is able to expose the
 following ports:
 
