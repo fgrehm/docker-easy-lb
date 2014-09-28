@@ -23,7 +23,7 @@ while read line; do
     echo '      Cleaning up load balancer'
     redis-cli del "frontend:${HOST_NAME}.${DOMAIN}" &>/dev/null
 
-    PORTS=$(docker inspect ${CID} | jq -r -c '.[0].Config.ExposedPorts | keys | .[]' | grep tcp | sed 's/\/tcp//')
+    PORTS=$(docker inspect ${CID} | jq -r -c '.[0].Config.ExposedPorts | keys | .[]' | sed 's/\/tcp//')
     if [ -n "${PORTS}" ]; then
       echo '      Registering alias'
       redis-cli rpush "frontend:${HOST_NAME}.${DOMAIN}" ${CID} &>/dev/null
