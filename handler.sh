@@ -29,7 +29,7 @@ while read line; do
       redis-cli rpush "frontend:${HOST_NAME}.${DOMAIN}" ${CID} &>/dev/null
       for port in $PORTS; do
         # REFACTOR: Use an equivalent of an `in_array` function
-        if [ "${port}" = '80' ] || [ "${port}" = '3000' ] || [ "${port}" = '4000' ] || [ "${port}" = '8080' ] || [ "${port}" = '9292' ] || [ "${port}" = '4567' ] || [ "${port}" = 9000 ]; then
+        if [ "${port}" = '80' ] || [ "${port}" = '3000' ] || [ "${port}" = '4000' ] || [ "${port}" = '8080' ] || [ "${port}" = '9292' ] || [ "${port}" = '4567' ] || [ "${port}" = '9000' ] || [ "${port}" = '5000' ]; then
           echo "      Registering ${port} for http://${IP}:${port}"
           redis-cli rpush "frontend:${HOST_NAME}.${DOMAIN}" "http://${IP}:${port}" &>/dev/null
         fi
