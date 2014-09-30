@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "${DEBUG}" = '1' ]; then
+  set -x
+fi
+
 echo "Starting load balancer handler"
 
 while read line; do
