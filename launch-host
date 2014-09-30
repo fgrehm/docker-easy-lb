@@ -18,8 +18,8 @@ if $(docker ps -a | grep -q $CONTAINER_NAME); then
     echo 'Load balancer is already running'
   fi
 else # Create
-  echo 'No load balancer found, starting'
-  docker run -d -e DOMAIN=$DOMAIN --name $CONTAINER_NAME -v /var/run/docker.sock:/var/run/docker.sock fgrehm/easy-lb
+  echo 'No load balancer found, creating'
+  docker run -d -e DOMAIN=$DOMAIN --name $CONTAINER_NAME -v `pwd`/logs:/var/log/supervisor -v /var/run/docker.sock:/var/run/docker.sock fgrehm/easy-lb
 fi
 
 stop_container() {
