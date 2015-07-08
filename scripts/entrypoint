@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# TODO: Rename this to scripts/start
+
+set -e
+
+if [[ ! -S /var/run/docker.sock ]]; then
+  echo 'Docker socket not mounted inside the container'
+  exit 1
+fi
+
+if [[ ! -w /tmp/etc-hosts ]]; then
+  echo '/etc/hosts was not mounted inside the container'
+  exit 1
+fi
+
+
+clean-up-etc-hosts() {
+  rm -f /tmp/etc-hosts.partial
+  regenerate-etc-hosts
+}
+trap 'echo "Interrupt detected, shutting down"; clean-up-etc-hosts' SIGINT
+
+# Cleanup
+if $(grep -q '# BEGIN DOCKER-EASY-LB' /tmp/etc-hosts); then
+  clean-up-etc-hosts
+fi
+rm -f /etc/nginx/sites-enabled/*.conf
+
+export LOAD_BALANCER_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $HOSTNAME)
+export DEFAULT_VHOST_SUFFIX='docker.dev'
+
+echo 'Wiring up existing docker containers'
+for cid in $(docker ps --filter "label=lb-host" -q); do
+  register-container $cid
+done
+regenerate-etc-hosts
+
+codep "/bin/event-listener" "/usr/sbin/nginx"

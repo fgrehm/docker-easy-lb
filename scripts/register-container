@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+cid="${1}"
+
+if [[ -z "${cid}" ]] ; then
+  echo 'Usage: register-container CONTAINER_ID'
+  exit 1
+fi
+
+cid=$(docker inspect -f '{{ .Id }}' "${cid}")
+rm -f "/etc/nginx/sites-enabled/${cid}.*.conf"
+
+vhost=$(docker inspect -f "{{ .Config.Hostname }}" $cid)
+# TODO: Add support for "forcing" a suffix based on container host name
+vhost="${vhost}.${DEFAULT_VHOST_SUFFIX}"
+hosts=''
+for port in $(docker inspect -f "{{ json .Config.ExposedPorts }}" $cid | jq '. | keys | .[]' -r); do
+  port=$(echo $port | cut -f1 -d'/')
+  echo "Registering '${cid}' as '${port}.${vhost}'"
+
+  hosts="${hosts} ${port}.${vhost}"
+  container_ip=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $cid)
+
+  sed "s|SERVER_NAME|${port}.${vhost}|g" /etc/nginx/proxy-template.conf > /etc/nginx/sites-enabled/${cid}.${port}.conf
+  sed -i "s|PROXY_PASS|${container_ip}:${port}|g" /etc/nginx/sites-enabled/${cid}.${port}.conf
+  cat /etc/nginx/sites-enabled/${cid}.${port}.conf
+done
+
+if [ -n "${hosts}" ]; then
+  echo "${LOAD_BALANCER_IP} ${hosts} # CID: ${cid}" >> /tmp/etc-hosts.partial
+fi

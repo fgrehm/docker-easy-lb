@@ -1,40 +1,21 @@
-# Based on https://raw.githubusercontent.com/hipache/hipache/master/Dockerfile
+FROM gliderlabs/alpine:3.2
+MAINTAINER Fabio Rehm "fgrehm@gmail.com"
 
-# Latest Ubuntu LTS
-FROM    ubuntu:14.04
+RUN apk --update add bash nginx curl jq
 
-# Install some stuff
-RUN apt-get -y update && \
-    apt-get -y install supervisor nodejs npm redis-server && \
-    npm install -g hipache
+RUN curl -Ls https://github.com/progrium/entrykit/releases/download/v0.2.0/entrykit_0.2.0_Linux_x86_64.tgz \
+    | tar -zxC /bin \
+  && curl -s https://get.docker.io/builds/Linux/x86_64/docker-1.7.0 > /bin/docker \
+  && chmod +x /bin/docker \
+  && entrykit --symlink
 
-# Download the docker CLI
-RUN apt-get install -y curl && \
-    curl https://get.docker.io/builds/Linux/x86_64/docker-latest > /usr/bin/docker && \
-    chmod +x /usr/bin/docker
+RUN mkdir -p /etc/nginx/sites-enabled \
+    && mkdir -p /var/www
 
-# Download and install jq
-RUN curl http://stedolan.github.io/jq/download/linux64/jq > /usr/bin/jq && \
-    chmod +x /usr/bin/jq
+ADD ./scripts /bin/
+ADD ./config/nginx.conf /etc/nginx/nginx.conf
+ADD ./config/proxy-template.conf /etc/nginx/proxy-template.conf
+ADD ./no-app-app /var/www/no-app-app/
 
-# Install the static web server
-RUN npm install -g node-static
-
-# Add our supervisor configs
-ADD ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Add our custom hipache configs
-ADD hipache.json /usr/local/lib/node_modules/hipache/config/config.json
-
-# Our docker events handler
-ADD ./service.sh /usr/bin/auto-lb
-ADD ./handler.sh /usr/bin/auto-lb-handler
-
-# The dummy app that handles unknown domains
-ADD ./no-app-app /no-app-app
-
-# Expose hipache
-EXPOSE  80
-
-# Start supervisor
-CMD ["supervisord", "-n"]
+ENTRYPOINT /bin/entrypoint
+EXPOSE 80

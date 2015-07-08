@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+echo 'Cleaning up /etc/hosts'
+sed '/# BEGIN DOCKER-EASY-LB/,/# END DOCKER-EASY-LB/d' /tmp/etc-hosts > /tmp/new-hosts
+cat /tmp/new-hosts > /tmp/etc-hosts
+
+if [[ -f /tmp/etc-hosts.partial ]]; then
+  echo 'Updating up /etc/hosts'
+  echo '# BEGIN DOCKER-EASY-LB' >> /tmp/etc-hosts
+  cat /tmp/etc-hosts.partial >> /tmp/etc-hosts
+  echo '# END DOCKER-EASY-LB' >> /tmp/etc-hosts
+fi

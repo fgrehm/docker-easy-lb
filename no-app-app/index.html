@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>404 - No application configured for this subdomain</title>
+    <title>404 - No application configured for this host</title>
     <style>
       body { background-color: #fff; margin: 0px; padding-top: 280px; text-align: center; }
       h1   { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 24px; font-weight: normal; }
@@ -9,7 +9,9 @@
   </head>
   <body>
     <div class="message">
-      <h1>There's no application running at this address</h1>
+      <h1>There's no application configured for the provided host</h1>
+      <p>You've reached the <a href="https://github.com/fgrehm/docker-easy-lb" target="_blank">docker-easy-lb</a> Web Server but no application could be found for this hostname.</p>
+      <p>If you believe this is a bug please <a href="https://github.com/fgrehm/docker-easy-lb/issues/new" target="_blank">open an issue on GitHub</a>.</p>
     </div>
   </body>
 </html>

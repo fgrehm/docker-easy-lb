@@ -1,2 +1,3 @@
 .git
-supervisor-logs
+Dockerfile
+test/

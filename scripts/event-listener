@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -e
+
+nginx-reload() {
+  regenerate-etc-hosts
+  nginx -s reload
+}
+
+handle-start-event() {
+  cid="${1}"
+  # Is the container really up? Sometimes it might start and error right away
+  running=$(docker inspect -f '{{ .State.Running }}' ${cid} 2>/dev/null)
+  lb_host=$(docker inspect -f '{{ json .Config.Labels }}' ${cid} 2>/dev/null | jq '. | keys | .' -r | grep -q 'lb-host')
+
+  if [[ "${running}" = 'true' ]] && $lb_host; then
+    register-container $cid
+    nginx-reload
+  fi
+}
+
+handle-die-event() {
+  unregister-container $1
+  nginx-reload
+}
+
+main() {
+  while read line; do
+    cid=$(echo $line | tr -d ':'  | cut -f2 -d' ')
+    event=$(echo $line | cut -f5 -d' ')
+
+    if [ "${DEBUG}" = '1' ]; then
+      echo "[DEBUG] Received '${event}' for '${cid}'"
+    fi
+
+    case "$event" in
+      'start') handle-start-event $cid ;;
+      'die')   handle-die-event $cid ;;
+      *) echo "'${event}' is not processed"
+        ;;
+    esac
+  done
+}
+
+docker events -f 'event=start' -f 'event=die' | main
